@@ -1,6 +1,6 @@
 use std::env;
 
-use rand::{prelude::IteratorRandom, thread_rng};
+use rand::{thread_rng, Rng};
 
 struct Lotto {
     take: usize,
@@ -10,18 +10,55 @@ struct Lotto {
 
 impl Lotto {
     fn new(take: usize, from: usize) -> Self {
-        todo!("Implement")
+        let mut rng = thread_rng();
+        let mut numbers: Vec<usize> = Vec::new();
+
+        for _i in 1..=take {
+            let mut candidate = rng.gen_range(0..=from);
+            while numbers.contains(&candidate) {
+                candidate = rng.gen_range(0..=from);
+            }
+            numbers.push(candidate);
+        }
+
+        Self {
+            take,
+            from,
+            numbers,
+        }
     }
 }
 
 fn format_lotto_results(lotto: &Lotto) -> String {
-    // Tip: Use the format macro
-    todo!("Implement")
+    //"6 of 45: [2, 3, 10, 25, 30, 40]"
+    format!("{} of {}: {:?}", lotto.take, lotto.from, lotto.numbers)
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    todo!("Implement CLI")
+    let argument_count = args.len() - 1;
+    if argument_count % 2 != 0 {
+        println!("Odd number of arguments not permitted");
+        return;
+    }
+
+    let mut i = 1;
+    loop {
+        let take: usize = args[i].parse().expect("missing take argument");
+        let from: usize = args[i + 1].parse().expect("missing from argument");
+
+        if take > from {
+            println!("take can not be larger than from");
+            return;
+        }
+        let lotto = Lotto::new(take, from);
+        println!("{}", format_lotto_results(&lotto));
+
+        i += 2;
+        if i >= argument_count + 1 {
+            break;
+        }
+    }
 }
 
 #[test]
